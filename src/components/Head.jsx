@@ -1,12 +1,44 @@
-import React from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toggleMenu } from "../../utils/appSlice";
+import { YT_SEARCH_API } from "../../utils/constants";
+import { cacheResults } from "../../utils/searchSlice";
 
 const Head = () => {
   const dispatch = useDispatch();
+  const [searchInput, setSearchInput] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  // const [showSuggestion, setShowSuggestion] = useState(false);
+
+  const searchCache = useSelector((store) => store.search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchCache[searchInput]) {
+        setSearchSuggestions(searchCache[searchInput]);
+      } else {
+        fetchData();
+      }
+    }, 200);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchInput]);
+
+  const fetchData = async () => {
+    const res = await fetch(YT_SEARCH_API + searchInput);
+    const data = await res.json();
+    setSearchSuggestions(data[1]);
+    // console.log(data);
+
+    dispatch(cacheResults({ [searchInput]: data[1] }));
+  };
+
   const toggleMenuHandler = () => {
     dispatch(toggleMenu());
   };
+  const showSuggestion = searchSuggestions.length === 0 ? false : true;
   return (
     <div className="grid grid-flow-col p-4 m-2 shadow-lg">
       <div className="flex col-span-1">
@@ -22,14 +54,34 @@ const Head = () => {
           alt="yt logo"
         />
       </div>
-      <div className="col-span-10 text-center">
-        <input
-          type="text"
-          className="w-1/2  border border-gray-200 p-2 rounded-l-2xl"
-        />
-        <button className="border border-gray-200 bg-gray-200 p-2 rounded-r-2xl">
-          🔍
-        </button>
+      <div className="col-span-10 px-2">
+        <div>
+          <input
+            type="text"
+            className="w-1/2  border border-gray-200 p-2  rounded-l-2xl"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            // onFocus={() => setShowSuggestion(true)}
+            // onBlur={() => setShowSuggestion(false)}
+          />
+          <button className="border border-gray-200 bg-gray-200 p-2 rounded-r-2xl">
+            🔍
+          </button>
+        </div>
+        {showSuggestion && (
+          <div className="absolute bg-white py-2 px-5 rounded-lg shadow w-[37rem] border border-gray-100">
+            <ul>
+              {searchSuggestions.map((item, index) => (
+                <li
+                  className="py-3 mt-2 hover:border-gray-400 shadow-sm cursor-pointer"
+                  key={index}
+                >
+                  🔍{item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       <div className="col-span-1">
         <img
