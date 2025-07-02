@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { closeMenu, toggleMenu } from "../../utils/appSlice";
 import CommentsContainer from "./CommentsContainer";
+import LiveChat from "./LiveChat";
 
 const WatchPage = () => {
   const [searchParams] = useSearchParams();
@@ -28,10 +29,9 @@ const WatchPage = () => {
   //     console.log("Data is ", data);
   //   };
   return (
-    <div className="flex flex-col">
-      <div className="px-5">
-        <div
-        >
+    <div className="flex flex-col w-full">
+      <div className="flex px-5 w-full">
+        <div>
           <iframe
             width="1260"
             height="600"
@@ -43,7 +43,9 @@ const WatchPage = () => {
             allowfullscreen
           ></iframe>
         </div>
-        <div></div>
+        <div className="w-full">
+          <LiveChat />
+        </div>
       </div>
       <CommentsContainer />
     </div>
